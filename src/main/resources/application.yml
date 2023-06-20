@@ -15,3 +15,9 @@ spring:
         show_sql: true
         format_sql: true
         use_sql_comments: true
+    defer-datasource-initialization: true #data.sql를 Hibernate가 초기화된 후에 실행시키는 옵션
+
+  #h2 등과 같은 내장? dbms가 아닌 mysql을 사용하므로 data.sql 실행시키려면 옵션 추가해야함.
+  sql:
+    init:
+      mode: always
