@@ -17,7 +17,7 @@ public class Member {
 
     private String password;
 
-    private  String nickname;
+    private String nickname;
 
     private boolean activated;
 
