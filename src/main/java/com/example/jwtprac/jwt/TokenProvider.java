@@ -5,8 +5,6 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,8 +23,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class TokenProvider implements InitializingBean { // 모든 속성이 BeanFactory에 의해 설정되면 반응해야 하는 빈에 의해 구현되는 인터페이스
-    private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
-
     private static final String AUTHORITIES_KEY = "auth";
     private final String secret;
     private final long tokenValidityInMilliseconds;
@@ -59,7 +55,7 @@ public class TokenProvider implements InitializingBean { // 모든 속성이 Bea
         return Jwts.builder() //JWT를 생성하기 위한 빌더 객체
                 .setSubject(authentication.getName()) // 토큰의 주제를 나타내는 값
                 .claim(AUTHORITIES_KEY, authorities) // 추가적인 클레임 설정, claim : payload에 포함되는 정보
-                .signWith(key, SignatureAlgorithm.HS512) // JWT를 서명하기위해 Key, Algorithm 지정
+                .signWith(key, SignatureAlgorithm.HS512) // JWT를 서명하기위해 Key, Algorithm 지정, 대칭키 사용
                 .setExpiration(validity) // 만료 시간
                 .compact(); // 마지막으로 JWT를 압축하고 서명하여 최종적인 JWT 문자열을 생성
     }
@@ -82,14 +78,14 @@ public class TokenProvider implements InitializingBean { // 모든 속성이 Bea
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        // User 객체를 만들어서 Authentication 리턴
+        // UserDetail 객체를 만듦.
         User principal = new User(claims.getSubject(), "", authorities);
 
-        // 인증된 생성자인 Authentication 생성
+        // 인증된 생성자인 Authentication 객체 생성
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
-    // 토큰의 유효성 검증을 수행
+    // 토큰의 유효성 검증을 수행하는 메서드
     public boolean validateToken(String token) {
         try {
             // 주어진 토큰을 해석하고 검증
