@@ -8,6 +8,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @RequiredArgsConstructor
 // TokenProvider , JwtFilter 를 SecurityConfig 에 적용하기위한 Class
+// JWT 기반의 인증/인가 처리를 수행
 public class JwtSecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
     private final TokenProvider tokenProvider;
 
@@ -15,6 +16,7 @@ public class JwtSecurityConfig extends SecurityConfigurerAdapter<DefaultSecurity
     @Override
     public void configure(HttpSecurity httpSecurity) {
         JwtFilter jwtFilter = new JwtFilter(tokenProvider);
+        // jwtFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
         httpSecurity.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
 }
