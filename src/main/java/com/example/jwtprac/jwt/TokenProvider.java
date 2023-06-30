@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+// JWT 토큰의 생성, 검증 및 파싱을 담당하는 인터페이스
 public class TokenProvider implements InitializingBean { // 모든 속성이 BeanFactory에 의해 설정되면 반응해야 하는 빈에 의해 구현되는 인터페이스
     private static final String AUTHORITIES_KEY = "auth";
     private final String secret;
