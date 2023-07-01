@@ -44,7 +44,7 @@ public class AuthController {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
 
-        // 생성된 JWT 토큰을 HTTP 헤더에 넣어서 클라이언트에게 반환
+        // 생성된 JWT 토큰을 HTTP 헤더에 넣고, TokenDTO를 통해 바디에도 넣고, 클라이언트에게 반환
         return new ResponseEntity<>(new TokenDTO(jwt), httpHeaders, HttpStatus.OK);
     }
 }
