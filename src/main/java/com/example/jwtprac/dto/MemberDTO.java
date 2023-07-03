@@ -16,7 +16,7 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 public class MemberDTO {
     @NotNull
-    @Size(min = 3, max = 50)
+    @Size(min = 3, max = 50) // Validation 검증을 위한 조건
     private String username;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // API 사용자가 이 객체를 통해 패스워드 값을 직접 변경할 수 없게함.
