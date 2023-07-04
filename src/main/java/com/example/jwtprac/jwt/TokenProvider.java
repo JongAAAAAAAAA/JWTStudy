@@ -1,5 +1,6 @@
 package com.example.jwtprac.jwt;
 
+import com.example.jwtprac.dto.TokenDTO;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -26,14 +27,17 @@ import java.util.stream.Collectors;
 public class TokenProvider implements InitializingBean { // 모든 속성이 BeanFactory에 의해 설정되면 반응해야 하는 빈에 의해 구현되는 인터페이스
     private static final String AUTHORITIES_KEY = "auth";
     private final String secret;
-    private final long tokenValidityInMilliseconds;
+    private final long accessTokenValidity;
+    private final long refreshTokenValidity;
     private Key key;
 
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
+            @Value("${jwt.access-token-validity-in-seconds}") long accessTokenValidity,
+            @Value("${jwt.refresh-token-validity-in-seconds}") long refreshTokenValidity) {
         this.secret = secret;
-        this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
+        this.accessTokenValidity = accessTokenValidity;
+        this.refreshTokenValidity = refreshTokenValidity;
     }
 
     @Override
@@ -45,20 +49,42 @@ public class TokenProvider implements InitializingBean { // 모든 속성이 Bea
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String createToken(Authentication authentication){ // Authentication : 인증 정보 저장 객체
+    public TokenDTO.TokenInfoDTO createToken(Authentication authentication){ // Authentication : 인증 정보 저장 객체
         String authorities = authentication.getAuthorities().stream() // stream : 컬렉션에 저장된 요소들을 하나씩 순회하면서 처리함
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(",")); // , 로 구분
 
         long now = new Date().getTime();
-        Date validity = new Date(now + this.tokenValidityInMilliseconds); // token의 expire time 설정
+        Date accessValidity = new Date(now + this.accessTokenValidity); // access token 의 expire time 설정
+        Date refreshValidity = new Date(now + this.refreshTokenValidity); // refresh token 의 expire time 설정
 
-        return Jwts.builder() //JWT를 생성하기 위한 빌더 객체
+        // Access Token 생성
+        String accessToken = Jwts.builder() //JWT를 생성하기 위한 빌더 객체
                 .setSubject(authentication.getName()) // 토큰의 주제를 나타내는 값
                 .claim(AUTHORITIES_KEY, authorities) // 추가적인 클레임 설정, claim : payload에 포함되는 정보
                 .signWith(key, SignatureAlgorithm.HS512) // JWT를 서명하기위해 Key, Algorithm 지정, 대칭키 사용
-                .setExpiration(validity) // 만료 시간
+                .setExpiration(accessValidity) // 만료 시간
                 .compact(); // 마지막으로 JWT를 압축하고 서명하여 최종적인 JWT 문자열을 생성
+
+        // Refresh Token 생성
+        String refreshToken = Jwts.builder()
+                .signWith(key, SignatureAlgorithm.HS512)
+                .setExpiration(refreshValidity)
+                .compact();
+
+        return TokenDTO.TokenInfoDTO.builder()
+                .grantType("Bearer") // OAuth2 프로토콜에서 사용되는 필드
+                .accessToken(accessToken)
+                .accessTokenExpiresIn(accessValidity.getTime())
+                .refreshToken(refreshToken)
+                .build();
+
+//        return Jwts.builder() //JWT를 생성하기 위한 빌더 객체
+//                .setSubject(authentication.getName()) // 토큰의 주제를 나타내는 값
+//                .claim(AUTHORITIES_KEY, authorities) // 추가적인 클레임 설정, claim : payload에 포함되는 정보
+//                .signWith(key, SignatureAlgorithm.HS512) // JWT를 서명하기위해 Key, Algorithm 지정, 대칭키 사용
+//                .setExpiration(accessValidity) // 만료 시간
+//                .compact(); // 마지막으로 JWT를 압축하고 서명하여 최종적인 JWT 문자열을 생성
     }
 
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 코드
