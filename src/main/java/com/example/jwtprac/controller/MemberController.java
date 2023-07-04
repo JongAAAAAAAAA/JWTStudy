@@ -1,10 +1,12 @@
 package com.example.jwtprac.controller;
 
 import com.example.jwtprac.application.MemberService;
+import com.example.jwtprac.dto.LoginDTO;
 import com.example.jwtprac.dto.MemberDTO;
 import com.example.jwtprac.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +21,18 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/signup")
-    public ResponseEntity<Member> signup( // ResponseEntity 는 HttpEntity 를 상속받는다. & Http Status(상태 코드) 등을 반환할 수 있다.
-            // @Valid는 MemberDTO 에 걸려있는 유효성을 위배하는지 검사해줌.
-            @Valid @RequestBody MemberDTO memberDTO
-    ) {
+    // ResponseEntity 는 HttpEntity 를 상속받는다. & Http Status(상태 코드) 등을 반환할 수 있다.
+    // @Valid는 MemberDTO 에 걸려있는 유효성을 위배하는지 검사해줌.
+    public ResponseEntity<Member> signup(@Valid @RequestBody MemberDTO memberDTO) {
         return ResponseEntity.ok(memberService.signup(memberDTO));
+    }
+
+    @PostMapping("/signin")
+    // ResponseEntity 는 HttpEntity 를 상속받는다. & Http Status(상태 코드) 등을 반환할 수 있다.
+    // @Valid는 MemberDTO 에 걸려있는 유효성을 위배하는지 검사해줌.
+    public ResponseEntity<?> signin(@Valid @RequestBody LoginDTO loginDTO) {
+//        return new ResponseEntity<>(memberService.signin(loginDTO), HttpStatus.OK);
+        return ResponseEntity.ok(memberService.signin(loginDTO));
     }
 
     @GetMapping("/member")
