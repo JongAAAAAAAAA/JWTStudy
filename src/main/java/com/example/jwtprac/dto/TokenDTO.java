@@ -12,4 +12,16 @@ import lombok.NoArgsConstructor;
 // 토큰 정보를 Response 하기 위한 DTO
 public class TokenDTO {
     private String token;
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class TokenInfoDTO {
+        private String grantType; // OAuth2 프로토콜에서 사용되는 필드
+        private String accessToken;
+        private Long accessTokenExpiresIn;
+        private String refreshToken;
+    }
 }
+
