@@ -1,24 +1,46 @@
 package com.example.jwtprac.application;
 
 import com.example.jwtprac.dao.MemberRepository;
+import com.example.jwtprac.dto.LoginDTO;
 import com.example.jwtprac.dto.MemberDTO;
+import com.example.jwtprac.dto.TokenDTO;
 import com.example.jwtprac.entity.Authority;
 import com.example.jwtprac.entity.Member;
+import com.example.jwtprac.jwt.JwtFilter;
+import com.example.jwtprac.jwt.TokenProvider;
 import com.example.jwtprac.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
+import static org.springframework.http.ResponseEntity.badRequest;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
-
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final TokenProvider tokenProvider;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Transactional
     // 회원가입 로직
@@ -44,6 +66,41 @@ public class MemberService {
 
         return memberRepository.save(member);
     }
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> signin(@Valid LoginDTO loginDTO){
+        // 로그인 정보로 AuthenticationToken 객체 생성
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword());
+
+        try{
+            // 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+            // 인증 정보를 기반으로 JWT 토큰 생성
+            TokenDTO.TokenInfoDTO tokenInfoDTO = tokenProvider.createToken(authentication);
+
+            // Refresh Token 을 Redis 에 저장 (expirationTime 설정을 통해 자동 삭제 처리)
+            stringRedisTemplate.opsForValue().set("RT:" + authentication.getName(), tokenInfoDTO.getRefreshToken(),
+                            tokenInfoDTO.getRefreshTokenExpiresIn(), TimeUnit.MILLISECONDS);
+
+            // Access Token 을 Header 에 추가
+            String accessToken = tokenInfoDTO.getAccessToken();
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.remove(JwtFilter.AUTHORIZATION_HEADER); // Access Token Flush
+//            httpHeaders.add("Content-Type", "application/json; charset=UTF-8");
+            httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+
+            return new ResponseEntity<>(tokenInfoDTO, httpHeaders, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>("아이디 또는 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+//    @Transactional
+//    public ResponseEntity<?> reissue(){
+//        return new ResponseEntity<>.ok();
+//    }
 
     @Transactional(readOnly = true)
     // username 을 이용해 유저, 권한정보 가져옴
