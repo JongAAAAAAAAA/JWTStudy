@@ -4,12 +4,14 @@ import com.example.jwtprac.application.MemberService;
 import com.example.jwtprac.dto.MemberDTO;
 import com.example.jwtprac.entity.Member;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ public class MemberController {
     @GetMapping("/member/{username}")
     @PreAuthorize("hasAnyRole('ADMIN')") // ADMIN 권한을 가진 사람만 호출할 수 있는 메서드
     public ResponseEntity<Member> getUserInfo(@PathVariable String username) {
+        log.info(username);
         return ResponseEntity.ok(memberService.getUserWithAuthorities(username).get());
     }
 }
