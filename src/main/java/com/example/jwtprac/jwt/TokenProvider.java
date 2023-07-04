@@ -76,6 +76,7 @@ public class TokenProvider implements InitializingBean { // 모든 속성이 Bea
                 .grantType("Bearer") // OAuth2 프로토콜에서 사용되는 필드
                 .accessToken(accessToken)
                 .accessTokenExpiresIn(accessValidity.getTime())
+                .refreshTokenExpiresIn(refreshValidity.getTime())
                 .refreshToken(refreshToken)
                 .build();
 
