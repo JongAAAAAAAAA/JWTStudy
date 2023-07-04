@@ -4,6 +4,9 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/jwttest?useUnicode=true&characterEncdoing=UTF-8&serverTimezone=Asia/Seoul&useLegacyDatetimeCode=false&useJDBCCompliantTime
     username: root
     password: admin
+  redis:
+    host: localhost
+    port: 6379
 
   jpa:
     hibernate:
@@ -29,4 +32,5 @@ jwt:
   #echo 'silvernine-tech-spring-boot-jwt-tutorial-secret-silvernine-tech-spring-boot-jwt-tutorial-secret'|base64
   secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
   # 토큰 만료시간 (단위 : 초)
-  token-validity-in-seconds: 86400 #24시간
+  access-token-validity-in-seconds: 86400000 #24시간
+  refresh-token-validity-in-seconds: 1209600000 #2주
