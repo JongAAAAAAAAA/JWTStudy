@@ -11,7 +11,6 @@ import com.example.jwtprac.jwt.TokenProvider;
 import com.example.jwtprac.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,14 +22,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
-import static org.springframework.http.ResponseEntity.badRequest;
 
 @Slf4j
 @Service
@@ -122,11 +119,40 @@ public class MemberService {
         return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
     }
 
-//    @Transactional
-//    public ResponseEntity<?> reissue(){
-//        // todo: Access Token 이 만료됐지만, Refresh Token 은 존재하는 상황
-//        return new ResponseEntity<>.ok();
-//    }
+    public ResponseEntity<?> reissue(TokenDTO.AllTokenDTO allTokenDTO) {
+        // Refresh Token 검증
+        if (!tokenProvider.validateToken(allTokenDTO.getRefreshToken())) {
+            return new ResponseEntity<>("Refresh Token 정보가 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        // Access Token 으로 부터 Authentication 객체 생성
+        Authentication authentication = tokenProvider.getAuthentication(allTokenDTO.getAccessToken());
+
+        // Redis 에서 username 을 기반으로 저장된 Refresh Token 값을 가져옴
+        String refreshToken = stringRedisTemplate.opsForValue().get("RT:" + authentication.getName());
+
+        // Refresh Token 에 대해 유효성을 검증을 했음에도 또 검증하는 이유는 security 설정에서 Permit All 했기 때문
+        // 로그아웃되어 Redis 에 Refresh Token 이 삭제되어 존재하지 않는 경우 처리
+        if(ObjectUtils.isEmpty(refreshToken)) {
+            return new ResponseEntity<>("Refresh Token 정보가 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        // Refresh Token 이 존재하지만 동일하지 않을 경우 처리
+        if(!refreshToken.equals(allTokenDTO.getRefreshToken())) {
+            return new ResponseEntity<>("Refresh Token 정보가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        // 새로운 토큰 생성
+        TokenDTO.TokenInfoDTO tokenInfoDTO = tokenProvider.createToken(authentication);
+
+        // Refresh Token Redis 업데이트
+        stringRedisTemplate.opsForValue()
+                .set("RT:" + authentication.getName(), tokenInfoDTO.getRefreshToken(), tokenInfoDTO.getRefreshTokenExpiresIn(), TimeUnit.MILLISECONDS);
+
+        log.info("reissue!");
+        return new ResponseEntity<>(tokenInfoDTO, HttpStatus.OK);
+//        return new ResponseEntity<>(tokenInfoDTO, "Token 정보가 갱신되었습니다.", HttpStatus.OK);
+    }
 
     @Transactional(readOnly = true)
     // username 을 이용해 유저, 권한정보 가져옴
