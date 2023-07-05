@@ -26,5 +26,14 @@ public class TokenDTO {
     public static class AccessTokenDTO {
         private String accessToken;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AllTokenDTO {
+        private String accessToken;
+        private String refreshToken;
+    }
 }
 
