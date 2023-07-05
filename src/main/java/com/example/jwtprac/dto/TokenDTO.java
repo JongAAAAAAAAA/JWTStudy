@@ -5,14 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 // 토큰 정보를 Response 하기 위한 DTO
 public class TokenDTO {
-    private String token;
-
     @Getter
     @Builder
     @AllArgsConstructor
@@ -23,6 +17,14 @@ public class TokenDTO {
         private Long accessTokenExpiresIn;
         private Long refreshTokenExpiresIn;
         private String refreshToken;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AccessTokenDTO {
+        private String accessToken;
     }
 }
 
