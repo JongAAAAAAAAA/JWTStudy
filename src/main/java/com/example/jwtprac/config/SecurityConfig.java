@@ -6,6 +6,7 @@ import com.example.jwtprac.jwt.JwtSecurityConfig;
 import com.example.jwtprac.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,6 +22,7 @@ public class SecurityConfig {
     private final TokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -51,15 +53,18 @@ public class SecurityConfig {
                 /** http 요청 접근 제한 */
                 .and()
                 .authorizeHttpRequests() // http 요청 접근 제한
+                .antMatchers("/error").permitAll() // 에러 코드 확인용
                 .antMatchers("/api/hello").permitAll() // "/api/hello" 의 접근은 인증없이 허용
                 // 로그인, 회원가입은 토큰이 없는 상태로 요청이 들어오므로 permitAll
                 .antMatchers("/api/authenticate").permitAll() // 토큰을 받기위한 로그인 api
                 .antMatchers("/api/signup").permitAll() // 회원 가입을 위한 api
+                .antMatchers("/api/signin").permitAll() // 로그인을 위한 api
+                .antMatchers("/api/reissue").permitAll() // reissue 를 위한 api
                 .anyRequest().authenticated() // 나머지 요청들은 모두 인증을 받아야 함
 
                 /** JwtSecurityConfig 적용 */
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider));
+                .apply(new JwtSecurityConfig(tokenProvider, stringRedisTemplate));
 
         return http.build();
     }
