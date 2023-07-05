@@ -147,7 +147,8 @@ public class MemberService {
 
         // Refresh Token Redis 업데이트
         stringRedisTemplate.opsForValue()
-                .set("RT:" + authentication.getName(), tokenInfoDTO.getRefreshToken(), tokenInfoDTO.getRefreshTokenExpiresIn(), TimeUnit.MILLISECONDS);
+                .set("RT:" + authentication.getName(), tokenInfoDTO.getRefreshToken(),
+                        tokenInfoDTO.getRefreshTokenExpiresIn(), TimeUnit.MILLISECONDS);
 
         log.info("reissue!");
         return new ResponseEntity<>(tokenInfoDTO, HttpStatus.OK);
