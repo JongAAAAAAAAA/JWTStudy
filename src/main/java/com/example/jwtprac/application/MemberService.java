@@ -98,14 +98,15 @@ public class MemberService {
     }
 
     @Transactional
-    public ResponseEntity<?> logout(TokenDTO.TokenInfoDTO tokenInfoDTO){
+    public ResponseEntity<?> logout(String accessToken){
         // Access Token 검증
-        if (!tokenProvider.validateToken(tokenInfoDTO.getAccessToken())) {
+        if (!tokenProvider.validateToken(accessToken)) {
+            log.info("access token: {}",accessToken);
             return new ResponseEntity<>("잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
         }
 
         // Access Token 으로 Authentication 만듦
-        Authentication authentication = tokenProvider.getAuthentication(tokenInfoDTO.getAccessToken());
+        Authentication authentication = tokenProvider.getAuthentication(accessToken);
 
         // Redis 에서 해당 username 으로 저장된 Refresh Token 이 있는지 여부를 확인 후 있을 경우 삭제
         if (stringRedisTemplate.opsForValue().get("RT:" + authentication.getName()) != null) {
@@ -114,15 +115,16 @@ public class MemberService {
         }
 
         // 해당 Access Token 유효시간 가지고 와서 BlackList 로 저장하기
-        Long expiration = tokenProvider.getExpiration(tokenInfoDTO.getAccessToken());
+        Long expiration = tokenProvider.getExpiration(accessToken);
         stringRedisTemplate.opsForValue()
-                .set(tokenInfoDTO.getAccessToken(), "logout", expiration, TimeUnit.MILLISECONDS);
+                .set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
 
         return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
     }
 
 //    @Transactional
 //    public ResponseEntity<?> reissue(){
+//        // todo: Access Token 이 만료됐지만, Refresh Token 은 존재하는 상황
 //        return new ResponseEntity<>.ok();
 //    }
 
