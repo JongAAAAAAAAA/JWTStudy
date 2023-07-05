@@ -32,16 +32,20 @@ public class MemberController {
     // ResponseEntity 는 HttpEntity 를 상속받는다. & Http Status(상태 코드) 등을 반환할 수 있다.
     // @Valid는 MemberDTO 에 걸려있는 유효성을 위배하는지 검사해줌.
     public ResponseEntity<?> signin(@Valid @RequestBody LoginDTO loginDTO) {
-//        return new ResponseEntity<>(memberService.signin(loginDTO), HttpStatus.OK);
         return ResponseEntity.ok(memberService.signin(loginDTO));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@Valid @RequestHeader(value = "Authorization") TokenDTO.AccessTokenDTO accessTokenDTO) {
-        // validation check
         String accessToken = accessTokenDTO.getAccessToken();
         String sAccessToken = accessToken.substring(7);
         return ResponseEntity.ok(memberService.logout(sAccessToken));
+    }
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(@Valid @RequestHeader(value = "Authorization") TokenDTO.AccessTokenDTO accessTokenDTO) {
+        String accessToken = accessTokenDTO.getAccessToken();
+        String sAccessToken = accessToken.substring(7);
+        return ResponseEntity.ok(memberService.reissue(sAccessToken));
     }
 
     @GetMapping("/member")
