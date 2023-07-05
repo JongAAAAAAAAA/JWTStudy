@@ -97,6 +97,30 @@ public class MemberService {
         }
     }
 
+    @Transactional
+    public ResponseEntity<?> logout(TokenDTO.TokenInfoDTO tokenInfoDTO){
+        // Access Token 검증
+        if (!tokenProvider.validateToken(tokenInfoDTO.getAccessToken())) {
+            return new ResponseEntity<>("잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        // Access Token 으로 Authentication 만듦
+        Authentication authentication = tokenProvider.getAuthentication(tokenInfoDTO.getAccessToken());
+
+        // Redis 에서 해당 username 으로 저장된 Refresh Token 이 있는지 여부를 확인 후 있을 경우 삭제
+        if (stringRedisTemplate.opsForValue().get("RT:" + authentication.getName()) != null) {
+            // Refresh Token 삭제
+            stringRedisTemplate.delete("RT:" + authentication.getName());
+        }
+
+        // 해당 Access Token 유효시간 가지고 와서 BlackList 로 저장하기
+        Long expiration = tokenProvider.getExpiration(tokenInfoDTO.getAccessToken());
+        stringRedisTemplate.opsForValue()
+                .set(tokenInfoDTO.getAccessToken(), "logout", expiration, TimeUnit.MILLISECONDS);
+
+        return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
+    }
+
 //    @Transactional
 //    public ResponseEntity<?> reissue(){
 //        return new ResponseEntity<>.ok();
