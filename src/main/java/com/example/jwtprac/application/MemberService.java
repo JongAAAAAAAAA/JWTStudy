@@ -119,28 +119,27 @@ public class MemberService {
         return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
     }
 
-    public ResponseEntity<?> reissue(TokenDTO.AllTokenDTO allTokenDTO) {
-        // Refresh Token 검증
-        if (!tokenProvider.validateToken(allTokenDTO.getRefreshToken())) {
-            return new ResponseEntity<>("Refresh Token 정보가 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
-        }
-
+    public ResponseEntity<?> reissue(String accessToken) {
         // Access Token 으로 부터 Authentication 객체 생성
-        Authentication authentication = tokenProvider.getAuthentication(allTokenDTO.getAccessToken());
+        Authentication authentication = tokenProvider.getAuthentication(accessToken);
 
         // Redis 에서 username 을 기반으로 저장된 Refresh Token 값을 가져옴
         String refreshToken = stringRedisTemplate.opsForValue().get("RT:" + authentication.getName());
 
-        // Refresh Token 에 대해 유효성을 검증을 했음에도 또 검증하는 이유는 security 설정에서 Permit All 했기 때문
         // 로그아웃되어 Redis 에 Refresh Token 이 삭제되어 존재하지 않는 경우 처리
         if(ObjectUtils.isEmpty(refreshToken)) {
+            return new ResponseEntity<>("Refresh Token 정보가 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        // Refresh Token 검증
+        if (!tokenProvider.validateToken(refreshToken)) {
             return new ResponseEntity<>("Refresh Token 정보가 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
 
-        // Refresh Token 이 존재하지만 동일하지 않을 경우 처리
-        if(!refreshToken.equals(allTokenDTO.getRefreshToken())) {
-            return new ResponseEntity<>("Refresh Token 정보가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
-        }
+//        // Refresh Token 이 존재하지만 동일하지 않을 경우 처리
+//        if(!refreshToken.equals(allTokenDTO.getRefreshToken())) {
+//            return new ResponseEntity<>("Refresh Token 정보가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+//        }
 
         // 새로운 토큰 생성
         TokenDTO.TokenInfoDTO tokenInfoDTO = tokenProvider.createToken(authentication);
