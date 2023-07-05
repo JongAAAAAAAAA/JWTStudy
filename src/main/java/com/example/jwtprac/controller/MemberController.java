@@ -3,6 +3,7 @@ package com.example.jwtprac.controller;
 import com.example.jwtprac.application.MemberService;
 import com.example.jwtprac.dto.LoginDTO;
 import com.example.jwtprac.dto.MemberDTO;
+import com.example.jwtprac.dto.TokenDTO;
 import com.example.jwtprac.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,14 @@ public class MemberController {
     public ResponseEntity<?> signin(@Valid @RequestBody LoginDTO loginDTO) {
 //        return new ResponseEntity<>(memberService.signin(loginDTO), HttpStatus.OK);
         return ResponseEntity.ok(memberService.signin(loginDTO));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@Valid @RequestHeader(value = "Authorization") TokenDTO.AccessTokenDTO accessTokenDTO) {
+        // validation check
+        String accessToken = accessTokenDTO.getAccessToken();
+        String sAccessToken = accessToken.substring(7);
+        return ResponseEntity.ok(memberService.logout(sAccessToken));
     }
 
     @GetMapping("/member")
