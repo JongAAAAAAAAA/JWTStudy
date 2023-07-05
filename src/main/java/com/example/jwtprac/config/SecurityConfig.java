@@ -6,6 +6,7 @@ import com.example.jwtprac.jwt.JwtSecurityConfig;
 import com.example.jwtprac.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,6 +22,7 @@ public class SecurityConfig {
     private final TokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -61,7 +63,7 @@ public class SecurityConfig {
 
                 /** JwtSecurityConfig 적용 */
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider));
+                .apply(new JwtSecurityConfig(tokenProvider, stringRedisTemplate));
 
         return http.build();
     }
