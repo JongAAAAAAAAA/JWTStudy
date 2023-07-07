@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @Slf4j
@@ -36,16 +37,13 @@ public class MemberController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@Valid @RequestHeader(value = "Authorization") TokenDTO.AccessTokenDTO accessTokenDTO) {
-        String accessToken = accessTokenDTO.getAccessToken();
-        String sAccessToken = accessToken.substring(7);
-        return ResponseEntity.ok(memberService.logout(sAccessToken));
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        return ResponseEntity.ok(memberService.logout(request));
     }
+
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(@Valid @RequestHeader(value = "Authorization") TokenDTO.AccessTokenDTO accessTokenDTO) {
-        String accessToken = accessTokenDTO.getAccessToken();
-        String sAccessToken = accessToken.substring(7);
-        return ResponseEntity.ok(memberService.reissue(sAccessToken));
+    public ResponseEntity<?> reissue(HttpServletRequest request) {
+        return ResponseEntity.ok(memberService.reissue(request));
     }
 
     @GetMapping("/member")
