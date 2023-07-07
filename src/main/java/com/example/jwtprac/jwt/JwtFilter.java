@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -17,6 +18,7 @@ import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class JwtFilter extends OncePerRequestFilter {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     private final TokenProvider tokenProvider;
@@ -50,8 +52,8 @@ public class JwtFilter extends OncePerRequestFilter {
         // 모든 Filter 를 거치면서 요청을 처리한다면, 최종적으로는 Servlet 으로 요청이 전달
     }
 
-    // 필터링을 하기 위한 토큰 정보를 얻는 메소드 - Request Header 에서 토큰 정보 가져옴 -> Cookie 에서 가져오는 방식으로 고쳐야함
-    private String resolveToken(HttpServletRequest request) {
+    // 필터링을 하기 위한 토큰 정보를 얻는 메소드 - Request Header 에서 토큰 정보 가져옴
+    public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER); // Authorization 헤더 값을 가져옴.
         // Authorization 헤더 값 확인해보자
         log.info("bearerToken: {}", bearerToken);
