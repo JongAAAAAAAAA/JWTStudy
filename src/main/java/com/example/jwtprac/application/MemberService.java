@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Collections;
 import java.util.Optional;
@@ -37,6 +38,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final TokenProvider tokenProvider;
+    private final JwtFilter jwtFilter;
     private final StringRedisTemplate stringRedisTemplate;
 
     @Transactional
@@ -95,7 +97,10 @@ public class MemberService {
     }
 
     @Transactional
-    public ResponseEntity<?> logout(String accessToken){
+    public ResponseEntity<?> logout(HttpServletRequest request){
+        // Header 에서 Access Token 추출
+        String accessToken = jwtFilter.resolveToken(request);
+
         // Access Token 검증
         if (!tokenProvider.validateToken(accessToken)) {
             log.info("access token: {}",accessToken);
@@ -119,7 +124,10 @@ public class MemberService {
         return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
     }
 
-    public ResponseEntity<?> reissue(String accessToken) {
+    public ResponseEntity<?> reissue(HttpServletRequest request) {
+        // Header 에서 Access Token 추출
+        String accessToken = jwtFilter.resolveToken(request);
+
         // Access Token 으로 부터 Authentication 객체 생성
         Authentication authentication = tokenProvider.getAuthentication(accessToken);
 
