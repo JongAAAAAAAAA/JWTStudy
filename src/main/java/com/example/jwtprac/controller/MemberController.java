@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @Slf4j
@@ -36,23 +37,20 @@ public class MemberController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@Valid @RequestHeader(value = "Authorization") TokenDTO.AccessTokenDTO accessTokenDTO) {
-        String accessToken = accessTokenDTO.getAccessToken();
-        String sAccessToken = accessToken.substring(7);
-        return ResponseEntity.ok(memberService.logout(sAccessToken));
-    }
-    @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(@Valid @RequestHeader(value = "Authorization") TokenDTO.AccessTokenDTO accessTokenDTO) {
-        String accessToken = accessTokenDTO.getAccessToken();
-        String sAccessToken = accessToken.substring(7);
-        return ResponseEntity.ok(memberService.reissue(sAccessToken));
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        return ResponseEntity.ok(memberService.logout(request));
     }
 
-    @GetMapping("/member")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')") // @PreAuthorize 는 메서드 실행전에 주어진 인증 정보로 접근 제어를 수행
-    public ResponseEntity<Member> getMyUserInfo() {
-        return ResponseEntity.ok(memberService.getMyUserWithAuthorities().get());
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(HttpServletRequest request) {
+        return ResponseEntity.ok(memberService.reissue(request));
     }
+
+//    @GetMapping("/member")
+//    @PreAuthorize("hasAnyRole('USER','ADMIN')") // @PreAuthorize 는 메서드 실행전에 주어진 인증 정보로 접근 제어를 수행
+//    public ResponseEntity<Member> getMyUserInfo() {
+//        return ResponseEntity.ok(memberService.getMyUserWithAuthorities().get());
+//    }
 
     @GetMapping("/member/{username}")
     @PreAuthorize("hasAnyRole('ADMIN')") // ADMIN 권한을 가진 사람만 호출할 수 있는 메서드

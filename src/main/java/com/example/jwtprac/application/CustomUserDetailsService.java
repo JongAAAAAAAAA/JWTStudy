@@ -44,8 +44,11 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))
                 .collect(Collectors.toList());
 
-        return new User(member.getUsername(),
+        return new User(
+                member.getId().toString(), // getName() 으로 Username을 받는 게 아니라 pk 값을 받기 위함.
+//                member.getUsername(),
                 member.getPassword(),
-                grantedAuthorities);
+                grantedAuthorities
+        );
     }
 }

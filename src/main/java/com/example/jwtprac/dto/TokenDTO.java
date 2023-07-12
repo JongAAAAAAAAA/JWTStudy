@@ -19,13 +19,13 @@ public class TokenDTO {
         private String refreshToken;
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class AccessTokenDTO {
-        private String accessToken;
-    }
+//    @Getter
+//    @Builder
+//    @AllArgsConstructor
+//    @NoArgsConstructor
+//    public static class AccessTokenDTO {
+//        private String accessToken;
+//    }
 
 //    @Getter
 //    @Builder
