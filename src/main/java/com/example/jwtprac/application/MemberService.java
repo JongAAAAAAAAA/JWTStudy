@@ -168,10 +168,10 @@ public class MemberService {
         return memberRepository.findOneWithAuthoritiesByUsername(username);
     }
 
-    @Transactional(readOnly = true)
-    // SecurityContext 에 저장된 CurrentUsername 에 해당하는 유저, 권한정보 가져옴
-    public Optional<Member> getMyUserWithAuthorities() {
-        return SecurityUtil.getCurrentUsername()
-                .flatMap(memberRepository::findOneWithAuthoritiesByUsername);
-    }
+//    @Transactional(readOnly = true)
+//    // SecurityContext 에 저장된 CurrentUsername 에 해당하는 유저, 권한정보 가져옴
+//    public Optional<Member> getMyUserWithAuthorities() {
+//        return SecurityUtil.getCurrentUsername()
+//                .flatMap(memberRepository::findOneWithAuthoritiesByUsername);
+//    }
 }

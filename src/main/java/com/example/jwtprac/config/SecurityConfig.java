@@ -55,6 +55,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests() // http 요청 접근 제한
                 .antMatchers("/error").permitAll() // 에러 코드 확인용
                 .antMatchers("/api/hello").permitAll() // "/api/hello" 의 접근은 인증없이 허용
+                .antMatchers("/api/hello/idTest").permitAll() // "/api/hello/idTest" 의 접근은 인증없이 허용
                 // 로그인, 회원가입은 토큰이 없는 상태로 요청이 들어오므로 permitAll
                 .antMatchers("/api/authenticate").permitAll() // 토큰을 받기위한 로그인 api
                 .antMatchers("/api/signup").permitAll() // 회원 가입을 위한 api

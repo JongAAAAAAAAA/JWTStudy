@@ -46,11 +46,11 @@ public class MemberController {
         return ResponseEntity.ok(memberService.reissue(request));
     }
 
-    @GetMapping("/member")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')") // @PreAuthorize 는 메서드 실행전에 주어진 인증 정보로 접근 제어를 수행
-    public ResponseEntity<Member> getMyUserInfo() {
-        return ResponseEntity.ok(memberService.getMyUserWithAuthorities().get());
-    }
+//    @GetMapping("/member")
+//    @PreAuthorize("hasAnyRole('USER','ADMIN')") // @PreAuthorize 는 메서드 실행전에 주어진 인증 정보로 접근 제어를 수행
+//    public ResponseEntity<Member> getMyUserInfo() {
+//        return ResponseEntity.ok(memberService.getMyUserWithAuthorities().get());
+//    }
 
     @GetMapping("/member/{username}")
     @PreAuthorize("hasAnyRole('ADMIN')") // ADMIN 권한을 가진 사람만 호출할 수 있는 메서드
